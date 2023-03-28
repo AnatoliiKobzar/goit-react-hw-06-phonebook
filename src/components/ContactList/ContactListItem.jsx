@@ -13,6 +13,8 @@ import {
   FormField,
 } from '../ContactForm/ContactForm.styled';
 import * as Yup from 'yup';
+import { useDispatch } from 'react-redux';
+import { deleteContact, editContact } from 'redux/contactsSlice';
 
 const phoneRegExp = /^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){3,14}(\s*)?$/;
 
@@ -26,10 +28,16 @@ const FornSchema = Yup.object().shape({
     .required('Required'),
 });
 
-export const ContactListItem = ({ contact, onDelete, editContact }) => {
+export const ContactListItem = ({ contact }) => {
   const [name, setName] = useState(contact.name);
   const [number, setNumber] = useState(contact.number);
   const [isOpenModal, setIsOpenModal] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const handelDeleteContact = contactId => {
+    dispatch(deleteContact(contactId));
+  };
 
   const openModal = () => {
     setIsOpenModal(true);
@@ -51,11 +59,13 @@ export const ContactListItem = ({ contact, onDelete, editContact }) => {
             onSubmit={values => {
               setName(values.name);
               setNumber(values.number);
-              editContact({
-                id: contact.id,
-                name: values.name,
-                number: values.number,
-              });
+              dispatch(
+                editContact({
+                  id: contact.id,
+                  name: values.name,
+                  number: values.number,
+                })
+              );
               closeModal();
             }}
             validationSchema={FornSchema}
@@ -93,7 +103,7 @@ export const ContactListItem = ({ contact, onDelete, editContact }) => {
         <Button
           type="button"
           onClick={() => {
-            onDelete(contact.id);
+            handelDeleteContact(contact.id);
           }}
         >
           <SlUserUnfollow size="18px" />
@@ -112,6 +122,4 @@ ContactListItem.propTypes = {
     name: PropTypes.string.isRequired,
     number: PropTypes.string.isRequired,
   }).isRequired,
-  onDelete: PropTypes.func.isRequired,
-  editContact: PropTypes.func.isRequired,
 };

@@ -3,8 +3,11 @@ import { Formik, Field } from 'formik';
 import { Button, ErrorMessage, Form, FormField } from './ContactForm.styled';
 import * as Yup from 'yup';
 import { nanoid } from 'nanoid';
-import PropTypes from 'prop-types';
 import { SlUserFollow } from 'react-icons/sl';
+import { addContact } from 'redux/contactsSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectContact } from 'redux/selectors';
+import { Report } from 'notiflix';
 
 const phoneRegExp = /^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){3,14}(\s*)?$/;
 
@@ -18,7 +21,10 @@ const FornSchema = Yup.object().shape({
     .required('Required'),
 });
 
-export const ContactForm = ({ onSave }) => {
+export const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContact);
+
   return (
     <Formik
       initialValues={{
@@ -26,10 +32,23 @@ export const ContactForm = ({ onSave }) => {
         number: '',
       }}
       onSubmit={(values, actions) => {
-        onSave({
-          ...values,
-          id: nanoid(),
-        });
+        if (
+          contacts.some(
+            contact => contact.name.toLowerCase() === values.name.toLowerCase()
+          )
+        ) {
+          return Report.warning(
+            'Warning',
+            'The contact to that name already exists!',
+            'Okay'
+          );
+        }
+        dispatch(
+          addContact({
+            ...values,
+            id: nanoid(),
+          })
+        );
         actions.resetForm();
       }}
       validationSchema={FornSchema}
@@ -53,5 +72,3 @@ export const ContactForm = ({ onSave }) => {
     </Formik>
   );
 };
-
-ContactForm.propTypes = { onSave: PropTypes.func.isRequired };

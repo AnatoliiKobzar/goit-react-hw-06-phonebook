@@ -1,17 +1,21 @@
 import { FormField } from 'components/ContactForm/ContactForm.styled';
 import React from 'react';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFilterValue } from 'redux/filterSlice';
+import { selectFilter } from 'redux/selectors';
 
-export const Filter = ({ onChange, value }) => {
+export const Filter = () => {
+  const value = useSelector(selectFilter);
+  const dispatch = useDispatch();
+
+  const handelSetFilter = event => {
+    dispatch(setFilterValue(event.target.value));
+  };
+
   return (
     <FormField>
       Find contacts by name
-      <input type="text" value={value} onChange={onChange} />
+      <input type="text" value={value} onChange={handelSetFilter} />
     </FormField>
   );
-};
-
-Filter.propTypes = {
-  onChange: PropTypes.func.isRequired,
-  value: PropTypes.string.isRequired,
 };
